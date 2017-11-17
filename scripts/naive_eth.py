@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import gdax
 import json
 
@@ -5,37 +7,6 @@ import random
 import argparse
 from   pikachu.credentials import auth_client_from_json
 
-# FIXME: ugly that this has to be in the beginning
-parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('-l', '--live', type=int, required=True, help='1 to trade')
-parser.add_argument(
-    '-c', '--cred_file', metavar="JSON_FILE", required=True,
-    help="path to credential file"
-)
-args = parser.parse_args()
-
-public_client = gdax.PublicClient()
-
-daily_stats = public_client.get_product_24hr_stats('ETH-USD')
-currencies = public_client.get_currencies()
-# print(currencies)
-print(daily_stats)
-
-# print(public_client.get_product_historic_rates('ETH-USD', start=None, end=None,
-                                   # granularity=3600))
-
-today_low = daily_stats['low']
-my_orders = []
-
-auth_client = auth_client_from_json(args.cred_file)
-
-request = auth_client.get_fills(limit=100)
-
-# print(request[0])
-
-# print auth_client.get_position()
-
-# do not execute this line
 import time
 import datetime as dtime
 
@@ -62,7 +33,6 @@ def limit_buy_lowest(auth_client, usd_balance, live=0):
 		print("time too far")
 		return
 
-	
 	# not enough liq
 	if volume < 5:
 		return
@@ -81,7 +51,7 @@ def limit_buy_lowest(auth_client, usd_balance, live=0):
 	if price > 350:
 		print("insane price @ {}".format(price))
 		return
-	
+
 	if live == 1:
 		returns = auth_client.buy(product_id='ETH-USD', size=0.01, price=price, type='limit', side='buy')
 		order_id = returns.get('id', None)
@@ -93,7 +63,7 @@ def limit_sell_highest(auth_client, eth_balance, live=0):
 	daily_stats = public_client.get_product_24hr_stats('ETH-USD')
 
 	currentTime = dtime.datetime.now().isoformat()
-	
+
 	array = public_client.get_product_historic_rates('ETH-USD', end=currentTime, granularity=300)
 
 	time_value, five_min_low, five_min_high, open_p, close_p, volume = sorted(array, reverse=True)[1]
@@ -102,7 +72,7 @@ def limit_sell_highest(auth_client, eth_balance, live=0):
 	if int(time.time()) - time_value > 1200:
 		print("time too far")
 		return
-	
+
 	# not enough liq
 	if volume < 5:
 		return
@@ -132,25 +102,55 @@ def limit_sell_highest(auth_client, eth_balance, live=0):
 			my_orders.append(order_id)
 
 
-while True:
-    try:
-	for id in my_orders:
-	    res = auth_client.get_order(id)
-	    if float(res['filled_size']) > 0:
-		print(res)
-			
-	    eth, usd = get_eth_funds(auth_client)
-	    eth = float(eth)
-	    usd = float(usd)
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description='Process some integers.')
+	parser.add_argument('-l', '--live', type=int, required=True, help='1 to trade')
+	parser.add_argument(
+		'-c', '--cred_file', metavar="JSON_FILE", required=True,
+		help="path to credential file"
+	)
+	args = parser.parse_args()
 
-	    # the other thing got sold. Finish.
-	    # print(eth, usd)
-	    if float(usd) > 500:
-		exit()
-		
-	    limit_buy_lowest(auth_client, usd, live=args.live)
-	    limit_sell_highest(auth_client, eth, live=args.live)
-    finally:
-	pass
-    # except Exception as e:
-    # 		print(e)
+	public_client = gdax.PublicClient()
+
+	daily_stats = public_client.get_product_24hr_stats('ETH-USD')
+	currencies = public_client.get_currencies()
+	# print(currencies)
+	print(daily_stats)
+
+	# print(public_client.get_product_historic_rates('ETH-USD', start=None, end=None,
+    # granularity=3600))
+
+	today_low = daily_stats['low']
+	my_orders = []
+
+	auth_client = auth_client_from_json(args.cred_file)
+
+	request = auth_client.get_fills(limit=100)
+
+	# print(request[0])
+
+	# print auth_client.get_position()
+	while True:
+		try:
+			for id in my_orders:
+					res = auth_client.get_order(id)
+					if float(res['filled_size']) > 0:
+						print(res)
+
+			eth, usd = get_eth_funds(auth_client)
+			eth = float(eth)
+			usd = float(usd)
+
+
+			# the other thing got sold. Finish.
+			# print(eth, usd)
+			if float(usd) > 500:
+				exit()
+
+			limit_buy_lowest(auth_client, usd, live=args.live)
+			limit_sell_highest(auth_client, eth, live=args.live)
+		finally:
+			pass
+		# except Exception as e:
+		# 		print(e)
