@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Logs all messages from gdax in rotating logs.
 
@@ -9,6 +11,7 @@ The Socket does not look very reliable though.
 import gdax
 import argparse
 import logging
+import time
 from   logging.handlers import RotatingFileHandler
 
 MKTDATA_PATH = "./gdax/{}/mktdata.json" # FIXME: customize
@@ -30,13 +33,14 @@ def continuous_logging(product):
     wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com",
                                     products=[product])
     wsClient.on_message = log_msg
+	wsClient.start()
     try:
-        wsClient.start()
+		while True:
+			time.sleep(10)
     except KeyboardInterrupt:
-        # FIXME: shit this cannot be caught
         wsClient.stop()
         logging.info('{"shutdown" : 1}')
-    
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("product", metavar="PRODUCT", help="e.g. BTC-USD")
