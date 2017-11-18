@@ -4,13 +4,16 @@
 Taken from gdax-python order_book.py, with small modifications
 """
 
-from __future__ import absolute_import, division, print_function
+from   __future__ import absolute_import, division, print_function
 
-from gdax import OrderBook
+from   gdax import OrderBook
 import sys
 import time
 import datetime as dt
-import argparse
+import logging
+from   pikachu.lib import cmdline_parser, rotation_logger
+
+MEGA = 2 ** 20
 
 
 class OrderBookConsole(OrderBook):
@@ -48,15 +51,20 @@ class OrderBookConsole(OrderBook):
             self._ask = ask
             self._bid_depth = bid_depth
             self._ask_depth = ask_depth
-            print('{},{:.3f},{:.2f},{:.3f},{:.2f}'.format(
-                current_time, bid_depth, bid, ask_depth, ask))
+            logging.info(
+                '{},{:.3f},{:.2f},{:.3f},{:.2f}'.format(
+                    current_time, bid_depth, bid, ask_depth, ask)
+            )
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("product", metavar="PRODUCT", help="e.g. BTC-USD")
+    parser = cmdline_parser.ArgumentParser()
+    parser.add_product()
+    parser.add_path(required=True)
     args = parser.parse_args()
 
+    # TODO: tweak params
+    rotation_logger.set_root_logger(args.path, maxBytes=50 * MEGA, backupCount=100)
     order_book = OrderBookConsole(args.product)
     order_book.start()
     try:

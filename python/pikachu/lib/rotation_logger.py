@@ -2,6 +2,7 @@ import logging
 from   logging.handlers import RotatingFileHandler
 
 
+# FIXME: give a new logger instead of the root logger
 def set_root_logger(
         filename,
         level='INFO',

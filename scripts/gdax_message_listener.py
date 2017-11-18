@@ -9,24 +9,23 @@ The Socket does not look very reliable though.
 """
 
 import gdax
-import argparse
 import logging
 import time
-from   pikachu.lib import rotation_logger
+from   pikachu.lib import rotation_logger, cmdline_parser
 
 MKTDATA_PATH = "../../btc/mktdata/gdax/{}/mktdata.json" # FIXME: customize
 MEGA = 2 ** 20
 
-def setup_logging(product):
-    path = MKTDATA_PATH.format(product)
+def setup_logging(product, path_pattern):
+    path = path_pattern.format(product)
     # TODO: tweak params
     rotation_logger.set_root_logger(path, maxBytes=50 * MEGA, backupCount=100)
 
 def log_msg(msg):
     logging.info(str(msg))
 
-def continuous_logging(product):
-    setup_logging(product)
+def continuous_logging(product, path_pattern):
+    setup_logging(product, path_pattern)
     wsClient = gdax.WebsocketClient(url="wss://ws-feed.gdax.com",
                                     products=[product])
     wsClient.on_message = log_msg
@@ -39,10 +38,11 @@ def continuous_logging(product):
         logging.info('{"shutdown" : 1}')
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("product", metavar="PRODUCT", help="e.g. BTC-USD")
+    parser = cmdline_parser.ArgumentParser()
+    parser.add_product()
+    parser.add_path(default=MKTDATA_PATH)
     args = parser.parse_args()
-    continuous_logging(args.product)
+    continuous_logging(args.product, args.path)
 
 if __name__ == "__main__":
     main()
