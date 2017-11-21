@@ -60,7 +60,7 @@ class OrderBookConsole(OrderBook):
         current_time = dt.datetime.now()
         super(OrderBookConsole, self).on_close()
         logging.info('{},-1,-1,-1,-1'.format(current_time))
-        if order_book.error:
+        if self.error:
             sys.exit(1)
         else:
             sys.exit(0)
