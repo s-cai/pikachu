@@ -75,12 +75,8 @@ def main():
     # TODO: tweak params
     rotation_logger.set_root_logger(args.path, maxBytes=50 * MEGA, backupCount=100)
     order_book = OrderBookConsole(args.product)
-    order_book.start()
-    try:
-        while True:
-            time.sleep(10)
-    except KeyboardInterrupt:
-        order_book.close()
+    order_book.start_and_wait()
+
 
 if __name__ == "__main__":
     main()
