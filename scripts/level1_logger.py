@@ -56,14 +56,11 @@ class OrderBookConsole(OrderBook):
                     current_time, bid_depth, bid, ask_depth, ask)
             )
 
-    def on_close(self):
+    def on_disconnection(self):
+        super(OrderBookConsole, self).on_disconnection()
         current_time = dt.datetime.now()
         super(OrderBookConsole, self).on_close()
         logging.info('{},-1,-1,-1,-1'.format(current_time))
-        if self.error:
-            sys.exit(1)
-        else:
-            sys.exit(0)
 
 
 def main():
