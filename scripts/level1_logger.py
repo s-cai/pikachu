@@ -52,14 +52,14 @@ class OrderBookConsole(OrderBook):
             self._bid_depth = bid_depth
             self._ask_depth = ask_depth
             logging.info(
-                '{},{:.3f},{:.2f},{:.3f},{:.2f}'.format(
+                # FIXME: use correct ticksize!!!
+                '{},{:.3f},{:.4f},{:.3f},{:.4f}'.format(
                     current_time, bid_depth, bid, ask_depth, ask)
             )
 
     def on_disconnection(self):
-        super(OrderBookConsole, self).on_disconnection()
         current_time = dt.datetime.now()
-        super(OrderBookConsole, self).on_close()
+        super(OrderBookConsole, self).on_disconnection()
         logging.info('{},-1,-1,-1,-1'.format(current_time))
 
 
