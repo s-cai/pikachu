@@ -1,8 +1,6 @@
 import pandas as pd
-import numpy as np
 import argparse
 import logging
-from   logging.handlers import RotatingFileHandler
 
 # 1. Read coinmarketcap for volume signal
 # 2. Pick the ones that have ridiculously increasing volumes
